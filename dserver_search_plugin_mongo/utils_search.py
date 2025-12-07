@@ -205,6 +205,28 @@ class MongoSearch(SearchABC):
         datasets = [ds for ds in cx]
         return datasets
 
+    def set_tags(self, uri, tags):
+        """Set a dataset's tags (replaces existing tags)."""
+        from dservercore import UnknownURIError
+        result = self.collection.update_one(
+            {"uri": uri},
+            {"$set": {"tags": tags}}
+        )
+        if result.matched_count == 0:
+            raise (UnknownURIError())
+        return tags
+
+    def set_annotations(self, uri, annotations):
+        """Set a dataset's annotations (replaces existing annotations)."""
+        from dservercore import UnknownURIError
+        result = self.collection.update_one(
+            {"uri": uri},
+            {"$set": {"annotations": annotations}}
+        )
+        if result.matched_count == 0:
+            raise (UnknownURIError())
+        return annotations
+
     def get_config(self):
         """Return initial Config object, available app-instance independent."""
         return Config
