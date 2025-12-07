@@ -227,6 +227,17 @@ class MongoSearch(SearchABC):
             raise (UnknownURIError())
         return annotations
 
+    def set_readme(self, uri, readme):
+        """Set a dataset's readme content."""
+        from dservercore import UnknownURIError
+        result = self.collection.update_one(
+            {"uri": uri},
+            {"$set": {"readme": readme}}
+        )
+        if result.matched_count == 0:
+            raise (UnknownURIError())
+        return readme
+
     def get_config(self):
         """Return initial Config object, available app-instance independent."""
         return Config
