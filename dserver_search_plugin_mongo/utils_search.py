@@ -50,6 +50,7 @@ VALID_MONGO_QUERY_KEYS = (
     "base_uris",
     "uuids",
     "tags",
+    "uploaded_by",
 )
 
 MONGO_QUERY_LIST_KEYS = (
@@ -57,6 +58,7 @@ MONGO_QUERY_LIST_KEYS = (
     "base_uris",
     "uuids",
     "tags",
+    "uploaded_by",
 )
 
 
@@ -142,6 +144,10 @@ def _dict_to_mongo_query(query_dict):
         )
     if "uuids" in query_dict:
         sub_queries.append(_deal_with_possible_or_statment(query_dict["uuids"], "uuid"))  # NOQA
+    if "uploaded_by" in query_dict:
+        sub_queries.append(
+            _deal_with_possible_or_statment(
+                query_dict["uploaded_by"], "uploaded_by"))
     if "tags" in query_dict:
         sub_queries.append(
             _deal_with_possible_and_statement(query_dict["tags"], "tags")
