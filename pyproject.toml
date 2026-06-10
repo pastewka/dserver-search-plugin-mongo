@@ -15,6 +15,7 @@ dynamic = ["version"]
 requires-python = ">=3.8"
 dependencies = [
     "pymongo",
+    "PyYAML",
     "dtoolcore>=3.18.0",
     "dservercore"
 ]

@@ -3,6 +3,8 @@
 import os
 
 import dtoolcore.utils
+import yaml
+
 import pymongo.errors
 
 from pymongo import MongoClient
@@ -20,6 +22,26 @@ from dservercore.schemas import SearchDatasetSchema
 
 from dserver_search_plugin_mongo.config import (
     Config, CONFIG_SECRETS_TO_OBFUSCATE)
+
+
+def _parse_readme(readme):
+    """Return the README parsed into a dict, or None.
+
+    The README is stored verbatim as a string under 'readme'. The parsed
+    representation stored under 'readme_parsed' enables structured queries
+    over README content, e.g. the dependency graph plugin's
+    'readme_parsed.derived_from.uuid' dependency key.
+    """
+    if isinstance(readme, dict):
+        return readme
+    if isinstance(readme, str):
+        try:
+            parsed = yaml.safe_load(readme)
+        except yaml.YAMLError:
+            return None
+        if isinstance(parsed, dict):
+            return parsed
+    return None
 
 
 VALID_MONGO_QUERY_KEYS = (
@@ -51,6 +73,10 @@ def _register_dataset_descriptive_metadata(collection, dataset_info):
     # Make a copy to ensure that the original data strucutre does not
     # get mangled by the datetime replacements.
     dataset_info = dataset_info.copy()
+
+    # Store a parsed representation of the README alongside the verbatim
+    # string to enable structured queries over README content.
+    dataset_info["readme_parsed"] = _parse_readme(dataset_info.get("readme"))
 
     frozen_at = extract_frozen_at_as_datetime(dataset_info)
     created_at = extract_created_at_as_datetime(dataset_info)
@@ -232,7 +258,8 @@ class MongoSearch(SearchABC):
         from dservercore import UnknownURIError
         result = self.collection.update_one(
             {"uri": uri},
-            {"$set": {"readme": readme}}
+            {"$set": {"readme": readme,
+                      "readme_parsed": _parse_readme(readme)}}
         )
         if result.matched_count == 0:
             raise (UnknownURIError())

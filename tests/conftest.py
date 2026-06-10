@@ -1,5 +1,6 @@
 """Reusable fixtures"""
 
+import os
 import random
 import string
 
@@ -43,12 +44,17 @@ def tmp_app_with_users(request):
         "SECRET_KEY": "secret",
         "FLASK_ENV": "development",
         "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "RETRIEVE_MONGO_URI": "mongodb://localhost:27017/",
+        "RETRIEVE_MONGO_URI": os.environ.get("TEST_MONGO_URI", "mongodb://localhost:27017/"),
         "RETRIEVE_MONGO_DB": tmp_mongo_db_name,
         "RETRIEVE_MONGO_COLLECTION": "datasets",
-        "SEARCH_MONGO_URI": "mongodb://localhost:27017/",
+        "SEARCH_MONGO_URI": os.environ.get("TEST_MONGO_URI", "mongodb://localhost:27017/"),
         "SEARCH_MONGO_DB": tmp_mongo_db_name,
         "SEARCH_MONGO_COLLECTION": "datasets",
+        # Required by extensions that may be co-installed in the test
+        # environment (e.g. the dependency graph plugin).
+        "MONGO_URI": os.environ.get("TEST_MONGO_URI", "mongodb://localhost:27017/"),
+        "MONGO_DB": tmp_mongo_db_name,
+        "MONGO_COLLECTION": "datasets",
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,
         "JWT_ALGORITHM": "RS256",
         "JWT_PUBLIC_KEY": JWT_PUBLIC_KEY,
